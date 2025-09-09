@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Flutter Clean",
+      "type": "shell",
+      "command": "fvm flutter clean",
+      "problemMatcher": []
+    },
+    {
+      "label": "Flutter Get",
+      "type": "shell",
+      "command": "fvm flutter pub get",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Runner",
+      "type": "shell",
+      "command": "fvm flutter pub run build_runner build --delete-conflicting-outputs",
+      "problemMatcher": []
+    },
+    {
+      "label": "Generate Splash",
+      "type": "shell",
+      "command": "fvm flutter pub run flutter_native_splash:create",
+      "problemMatcher": []
+    },
+    {
+      "label": "Generate Icons",
+      "type": "shell",
+      "command": "fvm flutter pub run flutter_launcher_icons",
+      "problemMatcher": []
+    },
+    {
+      "label": "Format Code",
+      "type": "shell",
+      "command": "dart format --set-exit-if-changed .",
+      "problemMatcher": []
+    },
+    {
+      "label": "Analyze Code",
+      "type": "shell",
+      "command": "dart analyze --fatal-infos --fatal-warnings .",
+      "problemMatcher": []
+    }
+  ]
+}

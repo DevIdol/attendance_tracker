@@ -1,0 +1,28 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "attendance-tracker-78c4d",
+          "appId": "1:998549465498:android:c80b0d19c3356ec5a5b223",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "attendance-tracker-78c4d",
+          "configurations": {
+            "android": "1:998549465498:android:c80b0d19c3356ec5a5b223",
+            "ios": "1:998549465498:ios:f952f015a3777dcba5b223"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-east1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

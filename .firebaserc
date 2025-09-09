@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "dev": "attendance-tracker-78c4d",
+    "staging": "attendance-tracker-78c4d",
+    "prod": "attendance-tracker-78c4d",
+    "default": "attendance-tracker-78c4d"
+  }
+}
