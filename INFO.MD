@@ -14,3 +14,4 @@ Password: admin@2025
 - Code Refactoring
 - Profile Image Upload:
   - Note: Profile image upload functionality has not been implemented because Firebase Storage is no longer free.
+- iOS Setup

@@ -1,5 +1,14 @@
 {
   "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "flavor",
+      "type": "pickString",
+      "description": "Select build flavor",
+      "options": ["dev", "staging", "prod"],
+      "default": "dev"
+    }
+  ],
   "tasks": [
     {
       "label": "Flutter Clean",
@@ -48,6 +57,14 @@
       "type": "shell",
       "command": "dart analyze --fatal-infos --fatal-warnings .",
       "problemMatcher": []
+    },
+    {
+      "label": "📦 Build APK",
+      "type": "shell",
+      "command": "fvm flutter build apk --dart-define-from-file=config.${input:flavor}.json",
+      "group": "build",
+      "problemMatcher": ["$dart-build_runner"],
+      "detail": "Build APK for selected flavor"
     }
   ]
 }
