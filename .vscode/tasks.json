@@ -14,9 +14,15 @@
       "problemMatcher": []
     },
     {
-      "label": "Build Runner",
+      "label": "Build Runner - Freezed",
       "type": "shell",
       "command": "fvm flutter pub run build_runner build --delete-conflicting-outputs",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Runner - Riverpod",
+      "type": "shell",
+      "command": "dart run build_runner watch -d",
       "problemMatcher": []
     },
     {

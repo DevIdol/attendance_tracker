@@ -19,7 +19,7 @@
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
     "pubspec.yaml": ".flutter-plugins, .dart_tool, .metadata, pubspec.lock, analysis_options.yaml, .flutter-plugins-dependencies",
-    "readme.*": "readme*",
+    "readme.*": "readme*, INFO.MD",
     "*.dart": "$(capture).g.dart, $(capture).freezed.dart, $(capture).test.dart",
     "firebase.json": "firebase.rules, firebase.indexes.json"
   },

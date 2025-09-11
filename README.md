@@ -1,10 +1,16 @@
 # Attendance Tracker
 
-## Project Architecture
+## Tech Stack
 
-- MVVM + Repository
-- State Management: [Riverpod](https://riverpod.dev/), [FlutterHooks](https://pub.dev/packages/flutter_hooks), [HooksRiverpod](https://pub.dev/packages/hooks_riverpod)
-- JSON Serialization: [Freezed](https://pub.dev/packages/freezed)
+- **Flutter**: 3.24.5
+- **Architecture**: MVVM + Repository
+- **State Management**: Riverpod, FlutterHooks, HooksRiverpod
+- **JSON Serialization**: Freezed
+- **Navigation**: GoRouter
+- **Backend**: Firebase (Authentication, Firestore)
+- **Logging**: Logger (for dev)
+- **Version Management**: FVM (Flutter Version Management)
+- **Other Dependencies**: ConnectivityPlus, Hive (for offline storage) etc...
 
 ## Flutter Version
 
@@ -55,6 +61,20 @@ fvm flutter build apk --dart-define-from-file=config.staging.json
 fvm flutter build apk --dart-define-from-file=config.prod.json
 ```
 
+## build runnder
+
+```bash
+#freezed
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+or
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+
+#reverpod
+dart run build_runner watch
+or
+dart run build_runner watch -d
+```
+
 ### Deploy rules & indexes
 
 ```bash
@@ -72,3 +92,5 @@ firebase deploy --only firestore:rules
 
 firebase deploy --only firestore:indexes
 ```
+
+---

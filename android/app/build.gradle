@@ -28,7 +28,7 @@ if (project.hasProperty('dart-defines')) {
 
 android {
     namespace = "com.hst.attendance_tracker"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
