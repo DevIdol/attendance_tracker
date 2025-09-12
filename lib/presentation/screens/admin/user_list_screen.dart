@@ -186,24 +186,6 @@ class UserListScreen extends HookConsumerWidget {
                                       children: [
                                         Text(user.email),
                                         const SizedBox(height: 4),
-                                        // Chip(
-                                        //   label: Text(
-                                        //     user.role == UserRole.admin
-                                        //         ? 'Admin'
-                                        //         : 'User',
-                                        //     style: const TextStyle(
-                                        //       fontSize: 12,
-                                        //       color: Colors.white,
-                                        //     ),
-                                        //   ),
-                                        //   backgroundColor:
-                                        //       user.role == UserRole.admin
-                                        //           ? Colors.blue
-                                        //           : Colors.green,
-                                        //   visualDensity: VisualDensity.compact,
-                                        //   materialTapTargetSize:
-                                        //       MaterialTapTargetSize.shrinkWrap,
-                                        // ),
                                       ],
                                     ),
                                     trailing: IconButton(

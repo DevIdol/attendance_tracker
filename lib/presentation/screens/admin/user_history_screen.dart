@@ -1,10 +1,10 @@
 import 'package:attendance_tracker/core/extensions/extensions.dart';
+import 'package:attendance_tracker/data/entities/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../data/entities/user.dart';
 import '../../providers/providers.dart';
 import '../../widgets/widgets.dart';
 
@@ -19,23 +19,46 @@ class UserHistoryScreen extends HookConsumerWidget {
     final isFetchingMore = useState(false);
     final startDate = useState<DateTime?>(null);
     final endDate = useState<DateTime?>(null);
+    final isMounted = useIsMounted();
 
+    // Get user details
     final userAsync =
         ref.watch(userListNotifierProvider.notifier).getUserById(userId);
 
+    // Get attendance state
+    final attendanceState = ref.watch(attendanceUpsertNotifierProvider(userId));
+
     useEffect(() {
+      // Start listening for attendance data
       Future.microtask(() {
-        ref
-            .read(attendanceListNotifierProvider(userId).notifier)
-            .startListening(
-              startDate: startDate.value,
-              endDate: endDate.value,
-            );
+        if (isMounted()) {
+          ref
+              .read(attendanceListNotifierProvider(userId).notifier)
+              .startListening(
+                startDate: startDate.value,
+                endDate: endDate.value,
+              );
+        }
       });
 
+      // Refresh attendance status
+      Future.microtask(() {
+        if (isMounted()) {
+          ref
+              .read(attendanceUpsertNotifierProvider(userId).notifier)
+              .refreshHasCheckedInToday();
+          ref
+              .read(attendanceUpsertNotifierProvider(userId).notifier)
+              .refreshHasCheckedOutToday();
+        }
+      });
+
+      // Pagination listener
       void listener() {
+        if (!isMounted()) return;
         final state = ref.read(attendanceListNotifierProvider(userId));
-        if (scrollController.position.pixels >=
+        if (scrollController.hasClients &&
+            scrollController.position.pixels >=
                 scrollController.position.maxScrollExtent - 200 &&
             !isFetchingMore.value &&
             state.hasMore) {
@@ -45,13 +68,15 @@ class UserHistoryScreen extends HookConsumerWidget {
                 endDate: endDate.value,
                 lastDocumentId: state.lastDocumentId,
               );
-          Future.delayed(
-              const Duration(seconds: 1), () => isFetchingMore.value = false);
+          Future.delayed(const Duration(seconds: 1), () {
+            if (isMounted()) {
+              isFetchingMore.value = false;
+            }
+          });
         }
       }
 
       scrollController.addListener(listener);
-
       return () => scrollController.removeListener(listener);
     }, [userId]);
 
@@ -61,18 +86,65 @@ class UserHistoryScreen extends HookConsumerWidget {
         firstDate: DateTime(2000),
         lastDate: DateTime.now(),
       );
-      if (picked != null) {
+      if (picked != null && isMounted()) {
         startDate.value = picked.start;
         endDate.value = picked.end;
 
         Future.microtask(() {
-          ref
-              .read(attendanceListNotifierProvider(userId).notifier)
-              .startListening(
-                startDate: startDate.value,
-                endDate: endDate.value,
-              );
+          if (isMounted()) {
+            ref
+                .read(attendanceListNotifierProvider(userId).notifier)
+                .startListening(
+                  startDate: startDate.value,
+                  endDate: endDate.value,
+                );
+          }
         });
+      }
+    }
+
+    Future<void> handleAdminCheckIn() async {
+      try {
+        final user = await userAsync;
+        await ref
+            .read(attendanceUpsertNotifierProvider(userId).notifier)
+            .checkIn(userId, user.name);
+        if (context.mounted) {
+          context.showSnackBar('Checked in ${user.name} successfully');
+        }
+
+        ref
+            .read(attendanceListNotifierProvider(userId).notifier)
+            .startListening(
+              startDate: startDate.value,
+              endDate: endDate.value,
+            );
+      } catch (e) {
+        if (context.mounted) {
+          context.showSnackBar('Error: $e', isError: true);
+        }
+      }
+    }
+
+    Future<void> handleAdminCheckOut() async {
+      try {
+        final user = await userAsync;
+        await ref
+            .read(attendanceUpsertNotifierProvider(userId).notifier)
+            .checkOut(userId, user.name);
+        if (context.mounted) {
+          context.showSnackBar('Checked out ${user.name} successfully');
+        }
+
+        // Refresh the data
+        ref
+            .read(attendanceListNotifierProvider(userId).notifier)
+            .startListening(
+              startDate: startDate.value,
+              endDate: endDate.value,
+            );
+      } catch (e) {
+        if (context.mounted) context.showSnackBar('Error: $e', isError: true);
       }
     }
 
@@ -82,9 +154,9 @@ class UserHistoryScreen extends HookConsumerWidget {
           future: userAsync,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return Text('${snapshot.data!.name}\'s Attendance History');
+              return const Text('Attendance History');
             }
-            return const Text('User Attendance History');
+            return const Text('User Attendance');
           },
         ),
         actions: const [
@@ -94,8 +166,117 @@ class UserHistoryScreen extends HookConsumerWidget {
       ),
       body: Column(
         children: [
+          // Admin Control Buttons
+          FutureBuilder<User>(
+            future: userAsync,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final user = snapshot.data!;
+                return Card(
+                  margin: const EdgeInsets.all(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            user.profileImageUrl != null
+                                ? CircleAvatar(
+                                    radius: 24,
+                                    backgroundImage:
+                                        NetworkImage(user.profileImageUrl!),
+                                  )
+                                : const CircleAvatar(
+                                    radius: 24,
+                                    child: Icon(Icons.person),
+                                  ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    user.email,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: attendanceState.hasCheckedInToday
+                                  ? null
+                                  : handleAdminCheckIn,
+                              icon: const Icon(Icons.login),
+                              label: const Text('Check In'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: attendanceState.hasCheckedInToday &&
+                                      !attendanceState.hasCheckedOutToday
+                                  ? handleAdminCheckOut
+                                  : null,
+                              icon: const Icon(Icons.logout),
+                              label: const Text('Check Out'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          attendanceState.hasCheckedInToday
+                              ? attendanceState.hasCheckedOutToday
+                                  ? 'Already checked out today'
+                                  : 'Checked in today'
+                              : 'Not checked in today',
+                          style: TextStyle(
+                            color: attendanceState.hasCheckedInToday
+                                ? attendanceState.hasCheckedOutToday
+                                    ? Colors.blue
+                                    : Colors.green
+                                : Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return const Card(
+                margin: EdgeInsets.all(16),
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              );
+            },
+          ),
+
+          // Date Range Selector
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
               children: [
                 Expanded(
@@ -113,6 +294,8 @@ class UserHistoryScreen extends HookConsumerWidget {
               ],
             ),
           ),
+
+          // Attendance List
           Expanded(
             child: Consumer(
               builder: (context, ref, child) {
@@ -120,55 +303,78 @@ class UserHistoryScreen extends HookConsumerWidget {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    Future.microtask(() {
-                      ref
-                          .read(attendanceListNotifierProvider(userId).notifier)
-                          .startListening(
-                            startDate: startDate.value,
-                            endDate: endDate.value,
-                          );
-                    });
+                    if (isMounted()) {
+                      Future.microtask(() {
+                        ref
+                            .read(
+                                attendanceListNotifierProvider(userId).notifier)
+                            .startListening(
+                              startDate: startDate.value,
+                              endDate: endDate.value,
+                            );
+                      });
+                    }
                   },
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     controller: scrollController,
                     slivers: [
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            if (index >= state.attendance.length) {
-                              return const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: LoadingIndicator(),
-                              );
-                            }
-                            final attendance = state.attendance[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              child: ListTile(
-                                title: Text(
-                                  attendance.type == 'check_in'
-                                      ? 'Check-In'
-                                      : 'Check-Out',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text(
-                                  'Time: ${DateFormat.yMd().add_jm().format(attendance.timestamp)}',
-                                ),
-                                trailing: attendance.isSynced
-                                    ? const Icon(Icons.cloud_done,
-                                        color: Colors.green)
-                                    : const Icon(Icons.cloud_off,
-                                        color: Colors.red),
-                              ),
-                            );
-                          },
-                          childCount:
-                              state.attendance.length + (state.hasMore ? 1 : 0),
+                      if (state.attendance.isEmpty &&
+                          !state.isLoading &&
+                          state.error == null)
+                        const SliverFillRemaining(
+                          child: Center(
+                            child: Text('No attendance records found'),
+                          ),
                         ),
-                      ),
+                      if (state.attendance.isNotEmpty)
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              if (index >= state.attendance.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: LoadingIndicator(),
+                                );
+                              }
+                              final attendance = state.attendance[index];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                child: ListTile(
+                                  title: Text(
+                                    attendance.type == 'check_in'
+                                        ? 'Check-In'
+                                        : 'Check-Out',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Text(
+                                    'Time: ${DateFormat.yMd().add_jm().format(attendance.timestamp)}',
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        attendance.type == 'check_in'
+                                            ? 'IN'
+                                            : 'OUT',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: attendance.type == 'check_in'
+                                              ? Colors.green
+                                              : Colors.blue,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            childCount: state.attendance.length +
+                                (state.hasMore ? 1 : 0),
+                          ),
+                        ),
                       if (state.isLoading && state.attendance.isEmpty)
                         const SliverFillRemaining(
                           child: Center(child: LoadingIndicator()),
@@ -187,16 +393,19 @@ class UserHistoryScreen extends HookConsumerWidget {
                                 const SizedBox(height: 16),
                                 ElevatedButton(
                                   onPressed: () {
-                                    Future.microtask(() {
-                                      ref
-                                          .read(attendanceListNotifierProvider(
-                                                  userId)
-                                              .notifier)
-                                          .startListening(
-                                            startDate: startDate.value,
-                                            endDate: endDate.value,
-                                          );
-                                    });
+                                    if (isMounted()) {
+                                      Future.microtask(() {
+                                        ref
+                                            .read(
+                                                attendanceListNotifierProvider(
+                                                        userId)
+                                                    .notifier)
+                                            .startListening(
+                                              startDate: startDate.value,
+                                              endDate: endDate.value,
+                                            );
+                                      });
+                                    }
                                   },
                                   child: const Text('Retry'),
                                 ),
@@ -214,4 +423,14 @@ class UserHistoryScreen extends HookConsumerWidget {
       ),
     );
   }
+}
+
+// Custom hook to track if the widget is mounted
+bool Function() useIsMounted() {
+  final isMounted = useRef(true);
+  useEffect(() {
+    isMounted.value = true;
+    return () => isMounted.value = false;
+  }, const []);
+  return () => isMounted.value;
 }

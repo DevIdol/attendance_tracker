@@ -194,9 +194,25 @@ class HistoryScreen extends HookConsumerWidget {
                       subtitle: Text(
                         'Time: ${DateFormat.yMd().add_jm().format(attendance.timestamp)}',
                       ),
-                      trailing: attendance.isSynced
-                          ? const Icon(Icons.cloud_done, color: Colors.green)
-                          : const Icon(Icons.cloud_off, color: Colors.red),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          attendance.isSynced
+                              ? const Icon(Icons.cloud_done,
+                                  color: Colors.green)
+                              : const Icon(Icons.cloud_off, color: Colors.red),
+                          const SizedBox(width: 10),
+                          Text(
+                            attendance.type == 'check_in' ? 'IN' : 'OUT',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: attendance.type == 'check_in'
+                                  ? Colors.green
+                                  : Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
