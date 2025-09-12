@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'attendance.dart';
+import '../../data/data.dart';
 
 part 'attendance_list_state.freezed.dart';
 

@@ -1,4 +1,3 @@
-import 'package:attendance_tracker/data/entities/attendance.dart';
 import 'package:attendance_tracker/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,6 +10,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'config/config.dart';
 import 'core/utils/utils.dart';
+import 'data/data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

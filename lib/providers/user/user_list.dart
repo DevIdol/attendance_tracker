@@ -1,10 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/utils/utils.dart';
-import '../../data/entities/entities.dart';
-import '../../data/repositories/repositories.dart';
+import '../../data/data.dart';
+import '../../repositories/repositories.dart';
+import 'user_list_state.dart';
 
-part 'user_provider.g.dart';
+part 'user_list.g.dart';
 
 @Riverpod(keepAlive: true)
 class UserListNotifier extends _$UserListNotifier {

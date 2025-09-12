@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/constants/constants.dart';
-import '../../providers/providers.dart';
+import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
 
 class ProfileScreen extends ConsumerWidget {

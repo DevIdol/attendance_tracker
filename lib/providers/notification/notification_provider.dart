@@ -2,8 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/constants/constants.dart';
 import '../../core/utils/utils.dart';
-import '../../data/repositories/repositories.dart';
-import 'auth_provider.dart';
+import '../../repositories/repositories.dart';
+import '../providers.dart';
 
 part 'notification_provider.g.dart';
 

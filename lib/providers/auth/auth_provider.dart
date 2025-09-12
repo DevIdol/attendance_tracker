@@ -1,11 +1,11 @@
-import 'package:attendance_tracker/core/utils/logger.dart';
-import 'package:attendance_tracker/data/entities/user.dart';
-import 'package:attendance_tracker/data/repositories/auth_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/constants/constants.dart';
+import '../../core/utils/utils.dart';
+import '../../data/data.dart';
+import '../../repositories/repositories.dart';
 
 part 'auth_provider.g.dart';
 
@@ -13,11 +13,11 @@ part 'auth_provider.g.dart';
 class AuthNotifier extends _$AuthNotifier {
   @override
   AsyncValue<User?> build() {
-    _checkCurrentUser();
+    _checkCurrentUserImmediately();
     return const AsyncValue.loading();
   }
 
-  Future<void> _checkCurrentUser() async {
+  Future<void> _checkCurrentUserImmediately() async {
     try {
       final currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
@@ -86,65 +86,74 @@ class AuthNotifier extends _$AuthNotifier {
 
     authRepo.authStateChanges.listen((firebaseUser) async {
       if (firebaseUser == null) {
-        state = const AsyncValue.data(null);
-        logger.i('No authenticated user');
+        // Only update state if it's different from current state
+        if (state.valueOrNull != null) {
+          state = const AsyncValue.data(null);
+          logger.i('User signed out');
+        }
       } else {
-        try {
-          final userDoc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(firebaseUser.uid)
-              .get();
+        // Only fetch user data if we don't already have it or if user ID changed
+        if (state.valueOrNull?.id != firebaseUser.uid) {
+          try {
+            final userDoc = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(firebaseUser.uid)
+                .get();
 
-          if (userDoc.exists) {
-            final userData = userDoc.data();
-            if (userData != null) {
-              try {
-                final user = User.fromJson(userData);
-                state = AsyncValue.data(user);
-                logger.i('User authenticated: ${firebaseUser.uid}');
-              } catch (e) {
-                logger.e('Error parsing user data: $e');
+            if (userDoc.exists) {
+              final userData = userDoc.data();
+              if (userData != null) {
+                try {
+                  final user = User.fromJson(userData);
+                  state = AsyncValue.data(user);
+                  logger.i('User authenticated: ${firebaseUser.uid}');
+                } catch (e) {
+                  logger.e('Error parsing user data: $e');
 
-                final user = User(
-                  id: firebaseUser.uid,
-                  email: userData['email'] ??
-                      firebaseUser.email ??
-                      'unknown@email.com',
-                  name: userData['name'] ??
-                      firebaseUser.displayName ??
-                      'Unknown User',
-                  role: UserRole.values.firstWhere(
-                    (role) => role.toString() == 'UserRole.${userData['role']}',
-                    orElse: () => UserRole.user,
-                  ),
-                  profileImageUrl: userData['profileImageUrl'],
-                  fcmTokens: List<String>.from(userData['fcmTokens'] ?? []),
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now(),
-                  location: userData['location'],
-                );
-                state = AsyncValue.data(user);
-                logger.i('Created default user from partial data: ${user.id}');
+                  final user = User(
+                    id: firebaseUser.uid,
+                    email: userData['email'] ??
+                        firebaseUser.email ??
+                        'unknown@email.com',
+                    name: userData['name'] ??
+                        firebaseUser.displayName ??
+                        'Unknown User',
+                    role: UserRole.values.firstWhere(
+                      (role) =>
+                          role.toString() == 'UserRole.${userData['role']}',
+                      orElse: () => UserRole.user,
+                    ),
+                    profileImageUrl: userData['profileImageUrl'],
+                    fcmTokens: List<String>.from(userData['fcmTokens'] ?? []),
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                    location: userData['location'],
+                  );
+                  state = AsyncValue.data(user);
+                  logger
+                      .i('Created default user from partial data: ${user.id}');
+                }
+              } else {
+                logger.w(
+                    'User document exists but data is null for: ${firebaseUser.uid}');
+                state = const AsyncValue.data(null);
+                await firebase_auth.FirebaseAuth.instance.signOut();
               }
             } else {
-              logger.w(
-                  'User document exists but data is null for: ${firebaseUser.uid}');
+              logger.w('User document not found for: ${firebaseUser.uid}');
               state = const AsyncValue.data(null);
               await firebase_auth.FirebaseAuth.instance.signOut();
             }
-          } else {
-            logger.w('User document not found for: ${firebaseUser.uid}');
-            state = const AsyncValue.data(null);
-            await firebase_auth.FirebaseAuth.instance.signOut();
+          } catch (e) {
+            logger.e('Error fetching user data: $e');
+            state = AsyncValue.error(e, StackTrace.current);
           }
-        } catch (e) {
-          logger.e('Error fetching user data: $e');
-          state = AsyncValue.error(e, StackTrace.current);
         }
       }
     });
   }
 
+  // ... rest of the methods remain the same ...
   Future<void> signIn(String email, String password) async {
     state = const AsyncValue.loading();
     try {

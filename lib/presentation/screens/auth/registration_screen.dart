@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/utils/utils.dart';
-import '../../providers/providers.dart';
+import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
 
 class RegistrationScreen extends HookConsumerWidget {

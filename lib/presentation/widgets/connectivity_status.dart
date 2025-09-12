@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/theme/theme.dart';
 import '../../core/utils/utils.dart';
-import '../providers/providers.dart';
+import '../../providers/providers.dart';
 
 class ConnectivityStatus extends ConsumerWidget {
   const ConnectivityStatus({super.key});

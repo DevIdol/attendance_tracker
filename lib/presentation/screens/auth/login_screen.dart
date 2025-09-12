@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/constants/constants.dart';
 import '../../../core/utils/utils.dart';
-import '../../providers/providers.dart';
+import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
 
 class LoginScreen extends HookConsumerWidget {

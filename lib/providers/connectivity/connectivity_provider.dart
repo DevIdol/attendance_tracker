@@ -2,10 +2,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../core/services/services.dart';
 import '../../core/utils/utils.dart';
-import '../../data/repositories/repositories.dart';
-import 'attendance_provider.dart';
-import 'auth_provider.dart';
+import '../../repositories/repositories.dart';
+import '../providers.dart';
 
 part 'connectivity_provider.g.dart';
 

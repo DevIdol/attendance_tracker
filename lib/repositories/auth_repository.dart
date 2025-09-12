@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../core/constants/constants.dart';
-import '../../core/utils/utils.dart';
-import '../entities/entities.dart';
+import '../core/constants/constants.dart';
+import '../core/utils/utils.dart';
+import '../data/data.dart';
 
 abstract class AuthRepository {
   Future<User?> signIn(String email, String password);

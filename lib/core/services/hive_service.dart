@@ -1,7 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../data/entities/entities.dart';
+import '../../data/data.dart';
 import '../utils/utils.dart';
 
 abstract class HiveService {

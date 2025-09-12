@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/services/hive_service.dart';
-import '../../core/utils/utils.dart';
-import '../entities/entities.dart';
+import '../core/services/services.dart';
+import '../core/utils/utils.dart';
+import '../data/data.dart';
 import 'notification_repository.dart';
 
 abstract class AttendanceRepository {

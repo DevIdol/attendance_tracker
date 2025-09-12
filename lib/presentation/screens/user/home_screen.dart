@@ -8,8 +8,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/utils.dart';
-import '../../../data/entities/entities.dart';
-import '../../providers/providers.dart';
+import '../../../data/data.dart';
+import '../../../providers/providers.dart';
 import '../../widgets/widgets.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {

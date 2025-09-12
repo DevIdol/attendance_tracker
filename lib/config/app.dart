@@ -3,8 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../core/constants/constants.dart';
 import '../core/theme/theme.dart';
-import '../presentation/providers/providers.dart';
-import '../presentation/routes/app_router.dart';
+import '../providers/providers.dart';
+import '../presentation/routes/routes.dart';
 import 'app_config.dart';
 
 class MyApp extends ConsumerStatefulWidget {

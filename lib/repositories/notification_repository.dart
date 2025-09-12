@@ -4,7 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import '../../core/utils/utils.dart';
+import '../core/utils/utils.dart';
 
 abstract class NotificationRepository {
   Future<String?> getFcmToken();
