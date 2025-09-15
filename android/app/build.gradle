@@ -77,3 +77,74 @@ android {
 flutter {
     source = "../.."
 }
+
+
+// Icon switching task
+task copySources(type: Copy) {
+    from "src/${dartEnvironmentVariables.FLAVOR}/res"
+    into 'src/main/res'
+}
+tasks.whenTaskAdded { task ->
+    task.dependsOn copySources
+    if (task.name == 'generateDebugResources') {
+        task.dependsOn copySources
+    }
+    if (task.name == 'generateReleaseResources') {
+        task.dependsOn copySources
+    }
+}
+
+// Task to switch google-services.json
+task selectGoogleServicesJson(type: Copy) {
+    from "src/${dartEnvironmentVariables.FLAVOR}/google-services.json"
+    into './'
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name == 'processDebugGoogleServices' || task.name == 'processReleaseGoogleServices') {
+        task.dependsOn selectGoogleServicesJson
+    }
+}
+
+// Add task dependencies here
+tasks.whenTaskAdded { task ->
+    def selectGoogleServicesJsonTask = tasks.findByName("selectGoogleServicesJson")
+    if (selectGoogleServicesJsonTask != null) {
+        if (task.name == 'compileFlutterBuildDebug') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == 'mergeDebugAssets') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == 'mergeDebugShaders') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == 'extractDeepLinksDebug') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == 'mergeDebugJniLibFolders') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == "compileFlutterBuildRelease") {
+            task.dependsOn "selectGoogleServicesJson"
+        }
+        if (task.name == "mergeReleaseAssets") {
+            task.dependsOn "selectGoogleServicesJson"
+        }
+        if (task.name == "mergeReleaseShaders") {
+            task.dependsOn "selectGoogleServicesJson"
+        }
+        if (task.name == 'extractDeepLinksRelease') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == 'mergeReleaseJniLibFolders') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == 'generateDebugResources') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+        if (task.name == 'generateReleaseResources') {
+            task.dependsOn selectGoogleServicesJsonTask
+        }
+    }
+}
